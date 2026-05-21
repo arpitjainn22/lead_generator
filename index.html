@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Belvilla Lead Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#1a5fa8;
+  --brand-lt:#e8f1fb;
+  --brand-dk:#0d3d72;
+  --accent:#e8a020;
+  --bg:#f5f6f8;
+  --surface:#ffffff;
+  --surface2:#f0f2f5;
+  --border:#e2e5ea;
+  --text:#1a1d23;
+  --text2:#5a6175;
+  --text3:#9aa0b0;
+  --success:#1e8a52;
+  --success-lt:#e6f6ed;
+  --warning:#c47a10;
+  --warning-lt:#fef3dc;
+  --info:#1a5fa8;
+  --info-lt:#e8f1fb;
+  --danger:#c43030;
+  --danger-lt:#fdeaea;
+  --radius:8px;
+  --radius-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+a{color:var(--brand);text-decoration:none}
+code{font-family:'DM Mono',monospace;font-size:12px;background:var(--surface2);padding:1px 6px;border-radius:4px;color:var(--brand-dk)}
+
+/* LAYOUT */
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{padding:2rem;overflow-x:hidden}
+
+/* SIDEBAR */
+.sb-logo{padding:0 1.25rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:1rem}
+.sb-logo-mark{width:36px;height:36px;background:var(--brand);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:.6rem}
+.sb-logo-mark svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sb-title{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.3px}
+.sb-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.sb-nav{padding:0 .75rem;flex:1}
+.sb-group{margin-bottom:1.25rem}
+.sb-group-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:0 .5rem;margin-bottom:.4rem}
+.sb-item{display:flex;align-items:center;gap:9px;padding:.55rem .75rem;border-radius:var(--radius);font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;border:none;background:transparent;width:100%;text-align:left}
+.sb-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sb-item:hover{background:var(--bg);color:var(--text)}
+.sb-item.active{background:var(--brand-lt);color:var(--brand);font-weight:500}
+.sb-footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);margin-top:auto}
+.sb-footer p{font-size:11px;color:var(--text3);line-height:1.6}
+.sync-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;background:var(--success-lt);color:var(--success);margin-top:.5rem}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.sync-dot.active{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem}
+.page-title{font-size:22px;font-weight:600;color:var(--text);letter-spacing:-.4px}
+.page-sub{font-size:13px;color:var(--text2);margin-top:3px}
+.header-actions{display:flex;gap:8px;align-items:center}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:1.5rem}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow)}
+.metric-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;display:flex;align-items:center;gap:5px}
+.metric-label svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.metric-val{font-size:24px;font-weight:600;color:var(--text);letter-spacing:-.5px}
+.metric-delta{font-size:11px;color:var(--success);margin-top:3px;font-weight:500}
+.metric-delta.warn{color:var(--warning)}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow);margin-bottom:1rem}
+.card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:1rem}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid transparent;font-family:'DM Sans',sans-serif}
+.btn-primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn-primary:hover{background:var(--brand-dk)}
+.btn-outline{background:var(--surface);color:var(--text);border-color:var(--border)}
+.btn-outline:hover{background:var(--bg);border-color:#c5cad4}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:var(--danger-lt);color:var(--danger);border-color:#f0b8b8}
+.btn-danger:hover{background:#fbd5d5}
+
+/* ICON BUTTONS */
+.icon-btn{width:30px;height:30px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;color:var(--text2)}
+.icon-btn:hover{background:var(--bg);color:var(--text)}
+.icon-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* FILTERS */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.filter-bar input[type=text],.filter-bar select{font-size:13px;padding:7px 11px;height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;transition:border-color .15s}
+.filter-bar input[type=text]:focus,.filter-bar select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(26,95,168,.1)}
+.filter-bar input[type=text]{flex:1;min-width:180px}
+.filter-count{font-size:12px;color:var(--text3);margin-left:auto;white-space:nowrap}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap}
+thead th:first-child{border-radius:var(--radius-lg) 0 0 0}
+thead th:last-child{border-radius:0 var(--radius-lg) 0 0}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fafbfc}
+.td-name{font-weight:500}
+.td-email{color:var(--brand);font-size:12px;display:block}
+.td-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.contact-cell{min-width:190px;line-height:1.4}
+.contact-link{font-size:12px;display:inline-block;text-decoration:none;font-weight:500}
+.phone-link{color:#1e8a52}
+.phone-link:hover{text-decoration:underline}
+.maps-link{color:#c47a10}
+.maps-link:hover{text-decoration:underline}
+.website-link{color:var(--brand)}
+.website-link:hover{text-decoration:underline}
+.no-contact-badge{display:inline-block;font-size:11px;color:var(--text3);background:var(--surface2);padding:2px 7px;border-radius:10px}
+.td-notes{font-size:11px;color:var(--text3);margin-top:3px;cursor:help}
+.td-actions{display:flex;gap:4px;align-items:center}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.b-holidu{background:#ddf4ec;color:#0d6e45}
+.b-villas4you{background:#fef0d6;color:#8a5a08}
+.b-maps{background:#ddeeff;color:#0d3d72}
+.b-search{background:#ede8fd;color:#4a2d9e}
+.b-manual{background:var(--surface2);color:var(--text2)}
+.status-new{background:var(--info-lt);color:var(--info)}
+.status-contacted{background:var(--warning-lt);color:var(--warning)}
+.status-qualified{background:var(--success-lt);color:var(--success)}
+.status-lost{background:var(--surface2);color:var(--text3)}
+
+/* STATUS SELECT */
+.status-sel{font-size:12px;padding:3px 8px;height:26px;border:1px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer}
+
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:12px;font-weight:500;color:var(--text2)}
+.fg input,.fg select,.fg textarea{font-size:13px;padding:8px 11px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;transition:border-color .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(26,95,168,.1)}
+.fg textarea{resize:vertical}
+.fg.full{grid-column:1/-1}
+
+/* CSV DROP */
+.csv-drop{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;display:block}
+.csv-drop:hover,.csv-drop.drag{border-color:var(--brand);background:var(--brand-lt)}
+.csv-drop input{display:none}
+.csv-icon{width:40px;height:40px;background:var(--brand-lt);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.csv-icon svg{width:22px;height:22px;stroke:var(--brand);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.csv-drop p{font-size:13px;color:var(--text2);margin-bottom:4px}
+.csv-drop small{font-size:11px;color:var(--text3)}
+
+/* SETUP STEPS */
+.steps{list-style:none;counter-reset:step}
+.steps li{counter-increment:step;display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);line-height:1.6}
+.steps li:last-child{border:none}
+.step-num{min-width:24px;height:24px;border-radius:50%;background:var(--brand-lt);color:var(--brand);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.api-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:.5rem}
+.api-table th{text-align:left;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;padding:6px 10px;border-bottom:1px solid var(--border)}
+.api-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2)}
+.api-table tr:last-child td{border:none}
+.free-pill{background:var(--success-lt);color:var(--success);padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+
+/* COUNTRY FLAG */
+.flag{font-size:14px;margin-right:4px}
+.new-tag{display:inline-block;padding:0 5px;border-radius:4px;font-size:10px;font-weight:600;background:var(--warning-lt);color:var(--warning);margin-left:4px;vertical-align:middle}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;box-shadow:var(--shadow-md);opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:999}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:3rem 1rem;color:var(--text3)}
+.empty svg{width:40px;height:40px;stroke:var(--border);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin-bottom:.75rem}
+.empty p{font-size:13px}
+
+/* ANALYTICS */
+.chart-wrap{position:relative;height:220px}
+
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+
+/* NOTICE BAR */
+.notice{background:var(--brand-lt);border:1px solid #b8d4f0;border-radius:var(--radius);padding:.75rem 1rem;font-size:12px;color:var(--brand-dk);margin-bottom:1rem;display:flex;gap:8px;align-items:flex-start;line-height:1.6}
+.notice svg{width:15px;height:15px;stroke:var(--brand);fill:none;stroke-width:2;flex-shrink:0;margin-top:1px;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+
+<div class="shell">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <div class="sb-title">Belvilla Leads</div>
+    <div class="sb-sub">EU Host Intelligence</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group">
+      <div class="sb-group-label">Pipeline</div>
+      <button class="sb-item active" onclick="goTo('pipeline',this)">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        All leads
+      </button>
+      <button class="sb-item" onclick="goTo('add',this)">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Add lead
+      </button>
+    </div>
+    <div class="sb-group">
+      <div class="sb-group-label">Import</div>
+      <button class="sb-item" onclick="goTo('import',this)">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Import CSV
+      </button>
+      <button class="sb-item" onclick="goTo('setup',this)">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Scraper setup
+      </button>
+    </div>
+    <div class="sb-group">
+      <div class="sb-group-label">Reports</div>
+      <button class="sb-item" onclick="goTo('analytics',this)">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Analytics
+      </button>
+    </div>
+    <div class="sb-group">
+      <div class="sb-group-label">Settings</div>
+      <button class="sb-item" onclick="goTo('sync',this)">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sync / Sheets
+      </button>
+    </div>
+  </nav>
+  <div class="sb-footer">
+    <p>Last import</p>
+    <div class="sync-pill"><span class="sync-dot"></span><span id="last-sync">No imports yet</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- PIPELINE PAGE -->
+<div id="page-pipeline" class="page active">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Lead pipeline</div>
+      <div class="page-sub">Vacation rental hosts across 6 EU markets</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="goTo('import',document.querySelector('.sb-item:nth-child(1)'))">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Import CSV
+      </button>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Total leads</div>
+      <div class="metric-val" id="m-total">0</div>
+      <div class="metric-delta" id="m-delta"></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Contacted</div>
+      <div class="metric-val" id="m-contacted">0</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Qualified</div>
+      <div class="metric-val" id="m-qualified">0</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Countries</div>
+      <div class="metric-val" id="m-countries">0</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Avg properties</div>
+      <div class="metric-val" id="m-avg">0</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="q" placeholder="Search name, email, region…" oninput="render()"/>
+    <select id="f-plat" onchange="render()">
+      <option value="">All platforms</option>
+      <option>Holidu</option><option>Villas4you</option><option>Google Maps</option><option>Google Search</option><option>Manual</option>
+    </select>
+    <select id="f-country" onchange="render()">
+      <option value="">All countries</option>
+      <option>France</option><option>Italy</option><option>Spain</option><option>Portugal</option><option>Croatia</option><option>Netherlands</option>
+    </select>
+    <select id="f-status" onchange="render()">
+      <option value="">All statuses</option>
+      <option>New</option><option>Contacted</option><option>Qualified</option><option>Lost</option>
+    </select>
+    <span class="filter-count" id="filter-count"></span>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Host / owner</th>
+          <th>Location</th>
+          <th>Props</th>
+          <th>Source</th>
+          <th>Contact / Reach</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="empty-state" class="empty" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      <p>No leads match your filters.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ADD LEAD PAGE -->
+<div id="page-add" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Add lead</div>
+      <div class="page-sub">Manually log a host from competitor research</div>
+    </div>
+  </div>
+  <div class="card" style="max-width:680px">
+    <div class="form-grid">
+      <div class="fg"><label>Host / owner name *</label><input id="f-name" placeholder="e.g. Marie Dupont"/></div>
+      <div class="fg"><label>Email address</label><input id="f-email" type="email" placeholder="host@example.com"/></div>
+      <div class="fg"><label>Phone</label><input id="f-phone" type="tel" placeholder="+33 6 12 34 56 78"/></div>
+      <div class="fg"><label>Country</label>
+        <select id="f-country2">
+          <option value="">Select…</option>
+          <option>France</option><option>Italy</option><option>Spain</option><option>Portugal</option><option>Croatia</option><option>Netherlands</option><option>Greece</option><option>Germany</option><option>Austria</option>
+        </select>
+      </div>
+      <div class="fg"><label>Region / city</label><input id="f-region" placeholder="e.g. Provence, Amalfi, Dalmatia…"/></div>
+      <div class="fg"><label>Source platform</label>
+        <select id="f-platform">
+          <option>Holidu</option><option>Villas4you</option><option>Google Maps</option><option>Google Search</option><option>Manual</option>
+        </select>
+      </div>
+      <div class="fg"><label>No. of properties (est.)</label><input id="f-props" type="number" min="1" placeholder="3"/></div>
+      <div class="fg"><label>Listing URL</label><input id="f-url" placeholder="https://holidu.com/…"/></div>
+      <div class="fg full"><label>Notes</label><textarea id="f-notes" rows="2" placeholder="Any additional context about this host…"></textarea></div>
+    </div>
+    <button class="btn btn-primary" onclick="addLead()">
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Add to pipeline
+    </button>
+  </div>
+</div>
+
+<!-- IMPORT PAGE -->
+<div id="page-import" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Import CSV</div>
+      <div class="page-sub">Drop the scraper output — new leads merge automatically</div>
+    </div>
+  </div>
+
+  <div class="notice">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    After running <code>python scraper.py --regions all</code>, drop the output <code>leads.csv</code> below. Duplicates are skipped automatically by email. Existing lead statuses are preserved.
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Drop scraped CSV</div>
+      <label class="csv-drop" id="drop-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+        <div class="csv-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <p>Drop <strong>leads.csv</strong> or <strong>leads_enriched.csv</strong></p>
+        <small>Supports scraper output or the template below · max 10MB</small>
+        <input type="file" accept=".csv" onchange="importCSV(this.files[0])"/>
+      </label>
+      <div id="import-msg" style="margin-top:10px;font-size:13px;color:var(--text2);display:none;"></div>
+      <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:12px;color:var(--text3);">Already have duplicates in your pipeline?</div>
+        <button class="btn btn-outline btn-sm" onclick="dedupeExisting()" style="color:var(--danger);border-color:#f0b8b8;">
+          <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Remove existing duplicates
+        </button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">CSV format</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:.75rem;line-height:1.7">Scraper output is auto-compatible. For manual CSV, use these column names:</p>
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:10px 12px;font-family:'DM Mono',monospace;font-size:11px;line-height:2;color:var(--text2);">
+        name, email, phone,<br>country, region, platform,<br>properties_est, url,<br>source_url, status, notes
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="dlTemplate()">
+        <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download template
+      </button>
+      <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+        <p style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:.5rem">Hosting your data persistently</p>
+        <p style="font-size:12px;color:var(--text3);line-height:1.7">This dashboard stores leads in your browser's localStorage. Data persists across page refreshes. For team sharing, export CSV and re-import on each machine, or use a shared Google Sheet + this tool's CSV download.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP PAGE -->
+<div id="page-setup" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Scraper setup</div>
+      <div class="page-sub">Get the Python scripts running in 10 minutes</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Quick start</div>
+      <ol class="steps">
+        <li><span class="step-num">1</span><span>Download the <strong>belvilla_scraper</strong> ZIP from Claude (4 Python files)</span></li>
+        <li><span class="step-num">2</span><span>Install Python 3.10+ if not already installed (<a href="https://python.org" target="_blank">python.org</a>), then run:<br><code>pip install -r requirements.txt</code></span></li>
+        <li><span class="step-num">3</span><span>Copy <code>.env.example</code> → <code>.env</code> and paste in your API keys (see table)</span></li>
+        <li><span class="step-num">4</span><span>Run a one-shot scrape:<br><code>python scraper.py --regions all --limit 30</code></span></li>
+        <li><span class="step-num">5</span><span>Schedule daily runs:<br><code>python scheduler.py --interval 24h</code></span></li>
+        <li><span class="step-num">6</span><span>Drop the output <code>leads.csv</code> into the <strong>Import CSV</strong> tab — done!</span></li>
+      </ol>
+    </div>
+    <div class="card">
+      <div class="card-title">API keys needed</div>
+      <table class="api-table">
+        <thead><tr><th>Service</th><th>Used for</th><th>Free tier</th></tr></thead>
+        <tbody>
+          <tr><td>Google Custom Search</td><td>Web scraping</td><td><span class="free-pill">100 req/day</span></td></tr>
+          <tr><td>Google Maps Places</td><td>Business listings</td><td><span class="free-pill">$200/mo credit</span></td></tr>
+          <tr><td>Hunter.io</td><td>Email lookup</td><td><span class="free-pill">25/month</span></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+        <p style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:.5rem">Hosting this dashboard (free)</p>
+        <ol class="steps" style="font-size:12px">
+          <li><span class="step-num">1</span><span>Create a free account at <a href="https://github.com" target="_blank">github.com</a></span></li>
+          <li><span class="step-num">2</span><span>Create a new repository named <code>belvilla-leads</code></span></li>
+          <li><span class="step-num">3</span><span>Upload <code>index.html</code> (this file) to the repo</span></li>
+          <li><span class="step-num">4</span><span>Go to repo Settings → Pages → Source: main branch → Save</span></li>
+          <li><span class="step-num">5</span><span>Your dashboard is live at <code>yourname.github.io/belvilla-leads</code> — free forever</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYTICS PAGE -->
+<div id="page-analytics" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Analytics</div>
+      <div class="page-sub">Pipeline and market breakdown</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Leads by country</div>
+      <div class="chart-wrap"><canvas id="c-country" role="img" aria-label="Leads by country">Country breakdown</canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Pipeline funnel</div>
+      <div class="chart-wrap"><canvas id="c-funnel" role="img" aria-label="Pipeline funnel stages">Funnel</canvas></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Leads by source platform</div>
+      <div class="chart-wrap"><canvas id="c-plat" role="img" aria-label="Leads by platform">Platform</canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Properties per host (distribution)</div>
+      <div class="chart-wrap"><canvas id="c-props" role="img" aria-label="Property distribution">Properties</canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- SYNC PAGE -->
+<div id="page-sync" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Sync with Google Sheets</div>
+      <div class="page-sub">Share leads across all devices and team members — free</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="loadFromSheets()">
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Sync now
+    </button>
+  </div>
+
+  <div class="notice">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    This connects your dashboard to a Google Sheet so all devices see the same leads. Setup takes about 5 minutes and is completely free.
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Step 1 — Paste your URLs</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="fg">
+          <label>Google Sheet CSV export URL <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="gs-csv-url" placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
+            value="" style="font-size:12px;font-family:var(--font-mono,monospace)"/>
+          <span style="font-size:11px;color:var(--text3);">Required — for reading leads from the sheet</span>
+        </div>
+        <div class="fg">
+          <label>Apps Script Web App URL <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="gs-script-url" placeholder="https://script.google.com/macros/s/.../exec"
+            value="" style="font-size:12px;font-family:var(--font-mono,monospace)"/>
+          <span style="font-size:11px;color:var(--text3);">Required — for writing lead status updates back to the sheet</span>
+        </div>
+        <button class="btn btn-primary" onclick="saveGSConfig()">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap:round stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save & connect
+        </button>
+        <div id="gs-save-msg" style="font-size:13px;display:none;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Step 2 — Set up Google Sheet (one time)</div>
+      <ol class="steps" style="font-size:12px;">
+        <li><span class="step-num">1</span><span>Go to <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> → create a new sheet named <strong>Belvilla Leads</strong></span></li>
+        <li><span class="step-num">2</span><span>On row 1, paste these headers exactly:<br>
+          <code style="font-size:10px">name,email,phone,country,region,platform,properties_est,url,website,source_url,status,notes,added</code>
+        </span></li>
+        <li><span class="step-num">3</span><span>Click <strong>File → Share → Publish to web</strong> → Sheet1 → CSV → Publish. Copy the link → paste as <em>CSV export URL</em> above</span></li>
+        <li><span class="step-num">4</span><span>Click <strong>Extensions → Apps Script</strong> → paste the script below → click <strong>Deploy → New deployment → Web app</strong> → Anyone → Deploy. Copy the URL → paste as <em>Apps Script URL</em> above</span></li>
+        <li><span class="step-num">5</span><span>Click <strong>Save & connect</strong> → then <strong>Sync now</strong>. Done — all devices will share the same data!</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+      <div class="card-title" style="margin:0">Apps Script code — paste this into Extensions → Apps Script</div>
+      <button class="btn btn-outline btn-sm" onclick="copyScript()">Copy</button>
+    </div>
+    <pre id="gs-script-code" style="background:var(--surface2);border-radius:var(--radius);padding:1rem;font-size:11px;font-family:monospace;overflow-x:auto;line-height:1.7;color:var(--text2);white-space:pre-wrap">function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+
+    if (data.action === 'replace') {
+      // Keep header row, clear everything else
+      var lastRow = sheet.getLastRow();
+      if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).clearContent();
+
+      // Write all leads
+      var rows = data.leads.map(function(l) {
+        return [
+          l.name||'', l.email||'', l.phone||'', l.country||'',
+          l.region||'', l.platform||'', l.properties_est||1,
+          l.url||'', l.website||'', l.source_url||'',
+          l.status||'New', l.notes||'', l.added||''
+        ];
+      });
+      if (rows.length > 0) {
+        sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
+      }
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ok:true}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ok:false, error:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput('Belvilla Leads Script is running.');
+}</pre>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const FLAGS={France:'🇫🇷',Italy:'🇮🇹',Spain:'🇪🇸',Portugal:'🇵🇹',Croatia:'🇭🇷',Netherlands:'🇳🇱',Greece:'🇬🇷',Germany:'🇩🇪',Austria:'🇦🇹'};
+const PLAT_CLS={'Holidu':'b-holidu','Villas4you':'b-villas4you','Google Maps':'b-maps','Google Search':'b-search','Manual':'b-manual'};
+const STATUS_CLS={'New':'status-new','Contacted':'status-contacted','Qualified':'status-qualified','Lost':'status-lost'};
+
+// ─── GOOGLE SHEETS CONFIG ───────────────────────────────────────────
+// Step 1: paste your Sheet's CSV export URL here (see Setup → Sync tab)
+// Step 2: paste your Apps Script Web App URL here (for write-back)
+const GS_CSV_URL    = localStorage.getItem('gs_csv_url')    || '';
+const GS_SCRIPT_URL = localStorage.getItem('gs_script_url') || '';
+// ────────────────────────────────────────────────────────────────────
+
+let leads=[], nextId=100, gsMode=false;
+
+// ── Parse CSV text into lead objects ──────────────────────────────
+function csvToLeads(csv){
+  const lines=csv.split('\n').filter(l=>l.trim());
+  if(lines.length<2)return[];
+  const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,'').toLowerCase());
+  const result=[];
+  for(let i=1;i<lines.length;i++){
+    const vals=splitCSVLine(lines[i]);
+    const row={};
+    headers.forEach((h,j)=>row[h]=(vals[j]||'').trim());
+    if(!row.name)continue;
+    result.push({
+      id:nextId++,
+      name:row.name,email:row.email||'',phone:row.phone||'',
+      country:row.country||'',region:row.region||'',
+      platform:row.platform||'Manual',
+      properties_est:parseInt(row.properties_est)||1,
+      url:row.url||'',website:row.website||'',
+      source_url:row.source_url||'',
+      status:row.status||'New',notes:row.notes||'',
+      added:row.added||new Date().toISOString().slice(0,10)
+    });
+  }
+  return result;
+}
+
+// ── Load from Google Sheets (CSV export URL) ──────────────────────
+async function loadFromSheets(){
+  const url=localStorage.getItem('gs_csv_url')||'';
+  if(!url){loadFromLocal();return;}
+  showSyncStatus('loading');
+  try{
+    // Add cache-buster so browser always fetches fresh data
+    const r=await fetch(url+'&t='+Date.now());
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const csv=await r.text();
+    const loaded=csvToLeads(csv);
+    if(loaded.length>0){
+      leads=loaded;
+      gsMode=true;
+      nextId=leads.reduce((m,l)=>Math.max(m,l.id),99)+1;
+      showSyncStatus('ok','Sheets');
+      toast('Loaded '+leads.length+' leads from Google Sheets ✓');
+    }else{
+      loadFromLocal();
+      showSyncStatus('warn','Sheet empty — using local');
+    }
+  }catch(err){
+    console.warn('Sheets load failed:',err);
+    loadFromLocal();
+    showSyncStatus('warn','Sheets error — using local');
+  }
+  render();
+}
+
+function loadFromLocal(){
+  try{
+    const saved=localStorage.getItem('belvilla_leads');
+    leads=saved?JSON.parse(saved):[];
+    nextId=leads.reduce((m,l)=>Math.max(m,l.id),99)+1;
+  }catch(e){leads=[];}
+}
+
+// ── Save: push to Sheets via Apps Script, fallback to localStorage ─
+async function saveLeads(){
+  // always save locally as backup
+  try{localStorage.setItem('belvilla_leads',JSON.stringify(leads));}catch(e){}
+
+  const scriptUrl=localStorage.getItem('gs_script_url')||'';
+  if(!scriptUrl)return; // no script URL — local only
+
+  try{
+    showSyncStatus('saving');
+    await fetch(scriptUrl,{
+      method:'POST',
+      mode:'no-cors', // Apps Script requires no-cors from external origins
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'replace',leads})
+    });
+    showSyncStatus('ok','Sheets');
+  }catch(err){
+    console.warn('Sheets save failed:',err);
+    showSyncStatus('warn','Saved locally only');
+  }
+}
+
+function showSyncStatus(state, label=''){
+  const dot=document.getElementById('sync-dot');
+  const lbl=document.getElementById('sync-label');
+  if(!dot||!lbl)return;
+  const colors={loading:'#e8a020',saving:'#e8a020',ok:'#1e8a52',warn:'#c43030'};
+  dot.style.background=colors[state]||'#9aa0b0';
+  dot.style.animation=(state==='loading'||state==='saving')?'pulse 1s infinite':'none';
+  const labels={loading:'Loading from Sheets…',saving:'Saving to Sheets…',ok:'Synced · '+label,warn:label||'Local only'};
+  lbl.textContent=labels[state]||state;
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────
+loadFromSheets();
+
+function toast(msg,dur=2800){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),dur);
+}
+
+function saveGSConfig(){
+  const csvUrl=document.getElementById('gs-csv-url').value.trim();
+  const scriptUrl=document.getElementById('gs-script-url').value.trim();
+  const msg=document.getElementById('gs-save-msg');
+  if(!csvUrl||!scriptUrl){
+    msg.style.display='block';msg.style.color='var(--danger)';
+    msg.textContent='Please fill in both URLs.';return;
+  }
+  localStorage.setItem('gs_csv_url',csvUrl);
+  localStorage.setItem('gs_script_url',scriptUrl);
+  msg.style.display='block';msg.style.color='var(--success)';
+  msg.textContent='✓ Config saved. Loading leads from Sheets…';
+  loadFromSheets();
+}
+
+function copyScript(){
+  const code=document.getElementById('gs-script-code').textContent;
+  navigator.clipboard.writeText(code).then(()=>toast('Script copied to clipboard ✓'));
+}
+
+function goTo(page, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(btn&&btn.classList){btn.classList.add('active');}
+  else{
+    const map={pipeline:0,add:1,import:2,setup:3,analytics:4,sync:5};
+    const items=document.querySelectorAll('.sb-item');
+    if(items[map[page]])items[map[page]].classList.add('active');
+  }
+  if(page==='analytics')buildCharts();
+  if(page==='sync'){
+    // populate saved URLs into fields
+    const csv=localStorage.getItem('gs_csv_url')||'';
+    const script=localStorage.getItem('gs_script_url')||'';
+    document.getElementById('gs-csv-url').value=csv;
+    document.getElementById('gs-script-url').value=script;
+  }
+}
+
+function render(){
+  const q=(document.getElementById('q').value||'').toLowerCase();
+  const fp=document.getElementById('f-plat').value;
+  const fc=document.getElementById('f-country').value;
+  const fs=document.getElementById('f-status').value;
+  const filtered=leads.filter(l=>{
+    if(q&&!`${l.name} ${l.email} ${l.region} ${l.country} ${l.notes}`.toLowerCase().includes(q))return false;
+    if(fp&&l.platform!==fp)return false;
+    if(fc&&l.country!==fc)return false;
+    if(fs&&l.status!==fs)return false;
+    return true;
+  });
+  const tbody=document.getElementById('tbody');
+  const empty=document.getElementById('empty-state');
+  document.getElementById('filter-count').textContent=`${filtered.length} of ${leads.length} leads`;
+  if(!filtered.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=filtered.map(l=>{
+    const hasEmail   = l.email   && l.email.trim();
+    const hasPhone   = l.phone   && l.phone.trim();
+    const hasUrl     = l.url     && l.url.trim()     && l.url.startsWith('http');
+    const hasWebsite = l.website && l.website.trim() && l.website.startsWith('http');
+    const isMaps     = hasUrl    && (l.url.includes('maps.google') || l.url.includes('place_id'));
+    const hasNotes   = l.notes   && l.notes.trim();
+
+    let contactHTML = '';
+
+    if(hasEmail){
+      contactHTML += `<a class="td-email" href="mailto:${esc(l.email)}">${esc(l.email)}</a>`;
+    }
+    if(hasPhone){
+      contactHTML += `<div style="margin-top:2px"><a class="contact-link phone-link" href="tel:${esc(l.phone.replace(/\s/g,''))}">📞 ${esc(l.phone)}</a></div>`;
+    }
+    if(hasWebsite){
+      contactHTML += `<div style="margin-top:2px"><a class="contact-link website-link" href="${esc(l.website)}" target="_blank" rel="noopener">🌐 Visit website</a></div>`;
+    }
+    if(isMaps){
+      contactHTML += `<div style="margin-top:2px"><a class="contact-link maps-link" href="${esc(l.url)}" target="_blank" rel="noopener">📍 Open in Google Maps</a></div>`;
+    } else if(hasUrl && !hasWebsite){
+      contactHTML += `<div style="margin-top:2px"><a class="contact-link website-link" href="${esc(l.url)}" target="_blank" rel="noopener">🌐 Visit website</a></div>`;
+    }
+    if(!hasEmail && !hasPhone && !hasUrl && !hasWebsite){
+      contactHTML += `<span class="no-contact-badge">No contact yet</span>`;
+    }
+    if(hasNotes){
+      contactHTML += `<div class="td-notes" title="${esc(l.notes)}">📝 ${esc(l.notes.length>40?l.notes.slice(0,40)+'…':l.notes)}</div>`;
+    }
+
+    return `
+    <tr>
+      <td>
+        <div class="td-name">${esc(l.name)}${l.added===new Date().toISOString().slice(0,10)?'<span class="new-tag">new</span>':''}</div>
+        <div class="td-sub">${esc(l.source_url||'')}</div>
+      </td>
+      <td><span class="flag">${FLAGS[l.country]||''}</span>${esc(l.region||'—')}, ${esc(l.country)}</td>
+      <td style="text-align:center;font-weight:500">${l.properties_est||1}</td>
+      <td><span class="badge ${PLAT_CLS[l.platform]||'b-manual'}">${esc(l.platform)}</span></td>
+      <td class="contact-cell">${contactHTML}</td>
+      <td>
+        <select class="status-sel ${STATUS_CLS[l.status]||''}" onchange="setStatus(${l.id},this.value)">
+          ${['New','Contacted','Qualified','Lost'].map(s=>`<option ${s===l.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td class="td-actions">
+        <button class="icon-btn" onclick="del(${l.id})" title="Delete lead">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+  updateMetrics();
+}
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function setStatus(id,s){
+  const l=leads.find(x=>x.id===id);
+  if(l){l.status=s;saveLeads();}
+  updateMetrics();
+}
+function del(id){
+  leads=leads.filter(x=>x.id!==id);
+  saveLeads();render();toast('Lead removed');
+}
+function updateMetrics(){
+  document.getElementById('m-total').textContent=leads.length;
+  document.getElementById('m-contacted').textContent=leads.filter(l=>l.status==='Contacted').length;
+  document.getElementById('m-qualified').textContent=leads.filter(l=>l.status==='Qualified').length;
+  document.getElementById('m-countries').textContent=new Set(leads.map(l=>l.country)).size;
+  const avg=leads.length?Math.round(leads.reduce((s,l)=>s+(+l.properties_est||1),0)/leads.length):0;
+  document.getElementById('m-avg').textContent=avg;
+  const today=leads.filter(l=>l.added==='2026-05-20').length;
+  document.getElementById('m-delta').textContent=today>0?`↑ ${today} added today`:'';
+}
+
+function addLead(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){toast('Please enter a host name.');return;}
+  leads.push({
+    id:nextId++,name,
+    email:document.getElementById('f-email').value.trim(),
+    phone:document.getElementById('f-phone').value.trim(),
+    country:document.getElementById('f-country2').value,
+    region:document.getElementById('f-region').value.trim(),
+    platform:document.getElementById('f-platform').value,
+    properties_est:parseInt(document.getElementById('f-props').value)||1,
+    url:document.getElementById('f-url').value.trim(),
+    source_url:'manual',status:'New',
+    notes:document.getElementById('f-notes').value.trim(),
+    added:new Date().toISOString().slice(0,10)
+  });
+  ['f-name','f-email','f-phone','f-region','f-url','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-props').value='';
+  saveLeads();
+  goTo('pipeline');
+  render();
+  toast('Lead added to pipeline ✓');
+}
+
+function makeDedupeKey(name, country, email){
+  // Primary key: email (if present)
+  // Secondary key: normalised name + country (catches same host uploaded twice)
+  const normName = (name||'').toLowerCase().replace(/[^a-z0-9]/g,'').trim();
+  const normCountry = (country||'').toLowerCase().trim();
+  const normEmail = (email||'').toLowerCase().trim();
+  return normEmail
+    ? `email:${normEmail}`
+    : `nc:${normName}|${normCountry}`;
+}
+
+function importCSV(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());
+    if(!lines.length)return;
+    const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,'').toLowerCase());
+
+    // Build dedup index from ALL existing leads using both keys
+    const seenKeys=new Set();
+    leads.forEach(l=>{
+      seenKeys.add(makeDedupeKey(l.name, l.country, l.email));
+      // also index by email alone so email always wins
+      if(l.email) seenKeys.add(`email:${l.email.toLowerCase().trim()}`);
+    });
+
+    let added=0, dupes=0;
+    for(let i=1;i<lines.length;i++){
+      const vals=splitCSVLine(lines[i]);
+      const row={};
+      headers.forEach((h,j)=>row[h]=(vals[j]||'').trim());
+      if(!row.name)continue;
+
+      const key=makeDedupeKey(row.name, row.country, row.email);
+      if(seenKeys.has(key)){
+        dupes++;
+        continue;
+      }
+      seenKeys.add(key);
+      // also add email key so subsequent rows with same email are caught
+      if(row.email) seenKeys.add(`email:${row.email.toLowerCase().trim()}`);
+
+      leads.push({
+        id:nextId++,name:row.name,email:row.email||'',phone:row.phone||'',
+        country:row.country||'',region:row.region||'',
+        platform:row.platform||'Google Search',
+        properties_est:parseInt(row.properties_est)||1,
+        url:row.url||'',website:row.website||'',source_url:row.source_url||file.name,
+        status:row.status||'New',notes:row.notes||'',
+        added:new Date().toISOString().slice(0,10)
+      });
+      added++;
+    }
+
+    // Also deduplicate the existing leads array itself (in case of pre-existing dupes)
+    const seen2=new Set();
+    leads=leads.filter(l=>{
+      const k=makeDedupeKey(l.name, l.country, l.email);
+      if(seen2.has(k)) return false;
+      seen2.add(k);
+      return true;
+    });
+
+    saveLeads();
+    const msg=document.getElementById('import-msg');
+    msg.style.display='block';
+    msg.style.color=added>0?'var(--success)':'var(--text2)';
+    msg.innerHTML=`✓ <strong>${added} leads imported</strong>${dupes>0?` · <span style="color:var(--warning)">${dupes} duplicates skipped</span> (matched by name+country or email)`:' · No duplicates found'}`;
+    document.getElementById('last-sync').textContent='Just now';
+    toast(`Imported ${added} leads · ${dupes} duplicates removed`);
+    render();
+  };
+  reader.readAsText(file);
+}
+
+function dedupeExisting(){
+  const before = leads.length;
+  const seen = new Set();
+  leads = leads.filter(l => {
+    const k = makeDedupeKey(l.name, l.country, l.email);
+    if(seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  const removed = before - leads.length;
+  saveLeads();
+  render();
+  const msg = document.getElementById('import-msg');
+  msg.style.display = 'block';
+  msg.style.color = removed > 0 ? 'var(--success)' : 'var(--text2)';
+  msg.innerHTML = removed > 0
+    ? `✓ Removed <strong>${removed} duplicate leads</strong> · ${leads.length} unique leads remain`
+    : `✓ No duplicates found — all ${leads.length} leads are unique`;
+  toast(removed > 0 ? `${removed} duplicates removed ✓` : 'No duplicates found');
+}
+
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file&&file.name.endsWith('.csv'))importCSV(file);
+}
+
+function splitCSVLine(line){
+  const result=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'&&!inQ){inQ=true;}
+    else if(line[i]==='"'&&inQ){inQ=false;}
+    else if(line[i]===','&&!inQ){result.push(cur);cur='';}
+    else cur+=line[i];
+  }
+  result.push(cur);
+  return result;
+}
+
+function exportCSV(){
+  const cols=['name','email','phone','country','region','platform','properties_est','url','status','notes','added'];
+  const csv=[cols.join(','),...leads.map(l=>cols.map(c=>`"${(l[c]||'').toString().replace(/"/g,'""')}"`).join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`belvilla_leads_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('CSV downloaded ✓');
+}
+
+function dlTemplate(){
+  const csv='name,email,phone,country,region,platform,properties_est,url,source_url,status,notes\nMarie Dupont,marie@example.com,+33 6 12 34 56,France,Provence,Google Search,3,,google.com,New,Seasonal host\n';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='belvilla_template.csv';a.click();
+}
+
+let charts={};
+function buildCharts(){
+  const cc={},pc={},sc={New:0,Contacted:0,Qualified:0,Lost:0},props=[0,0,0,0,0];
+  leads.forEach(l=>{
+    cc[l.country]=(cc[l.country]||0)+1;
+    pc[l.platform]=(pc[l.platform]||0)+1;
+    if(sc[l.status]!==undefined)sc[l.status]++;
+    const p=+l.properties_est||1;
+    const idx=p<=2?0:p<=5?1:p<=10?2:p<=20?3:4;
+    props[idx]++;
+  });
+  const topC=Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,6);
+
+  const COLORS=['#1a5fa8','#e8a020','#1e8a52','#c43030','#7048b8','#0ea5a8'];
+
+  if(charts.country)charts.country.destroy();
+  charts.country=new Chart(document.getElementById('c-country'),{
+    type:'bar',
+    data:{labels:topC.map(x=>x[0]),datasets:[{data:topC.map(x=>x[1]),backgroundColor:topC.map((_,i)=>COLORS[i%COLORS.length]),borderRadius:5,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{family:'DM Sans'}},grid:{color:'#f0f2f5'}},x:{ticks:{font:{family:'DM Sans'}},grid:{display:false}}}}
+  });
+
+  if(charts.funnel)charts.funnel.destroy();
+  charts.funnel=new Chart(document.getElementById('c-funnel'),{
+    type:'bar',
+    data:{labels:Object.keys(sc),datasets:[{data:Object.values(sc),backgroundColor:['#1a5fa8','#e8a020','#1e8a52','#c5cad4'],borderRadius:5,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{family:'DM Sans'}},grid:{color:'#f0f2f5'}},x:{ticks:{font:{family:'DM Sans'}},grid:{display:false}}}}
+  });
+
+  if(charts.plat)charts.plat.destroy();
+  const platColors={'Holidu':'#1e8a52','Villas4you':'#e8a020','Google Maps':'#1a5fa8','Google Search':'#7048b8','Manual':'#9aa0b0'};
+  charts.plat=new Chart(document.getElementById('c-plat'),{
+    type:'bar',
+    data:{labels:Object.keys(pc),datasets:[{data:Object.values(pc),backgroundColor:Object.keys(pc).map(p=>platColors[p]||'#9aa0b0'),borderRadius:5,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{family:'DM Sans'}},grid:{color:'#f0f2f5'}},y:{ticks:{font:{family:'DM Sans'}},grid:{display:false}}}}
+  });
+
+  if(charts.props)charts.props.destroy();
+  charts.props=new Chart(document.getElementById('c-props'),{
+    type:'bar',
+    data:{labels:['1–2','3–5','6–10','11–20','20+'],datasets:[{data:props,backgroundColor:'#1a5fa8',borderRadius:5,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{family:'DM Sans'}},grid:{color:'#f0f2f5'}},x:{ticks:{font:{family:'DM Sans'}},grid:{display:false}}}}
+  });
+}
+
+render();
+</script>
+</body>
+</html>
